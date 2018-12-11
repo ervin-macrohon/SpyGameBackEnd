@@ -13,6 +13,7 @@ import com.fdmgroup.application.exceptions.ExceededRoomCapacityException;
 import com.fdmgroup.application.exceptions.ExceededRoomsCapacityException;
 import com.fdmgroup.application.exceptions.RoomNotFoundException;
 import com.fdmgroup.application.services.IRoomManagementService;
+import com.fdmgroup.application.util.JsonWrapper;
 
 @RestController
 public class RoomController {
@@ -27,7 +28,7 @@ public class RoomController {
 		} catch (ExceededRoomsCapacityException e) {
 			resp.setStatus(404);
 		}
-		return "{\"roomId\":" + roomId + "}";
+		return JsonWrapper.wrap("roomId", roomId);
 	}
 	
 	@RequestMapping(value="/room/{roomId}/{nickname}", method=RequestMethod.PUT)
@@ -36,15 +37,20 @@ public class RoomController {
 			return rmService.addToRoom(roomId, nickname);
 		} catch (ExceededRoomCapacityException|DuplicateNicknameException e) {
 			res.setStatus(403);
-			return "{\"message\":\"" + e.getMessage() + "\"}";
+			return JsonWrapper.wrap("message", e.getMessage());
 		} catch (RoomNotFoundException e) {
 			res.setStatus(404);
-			return "{\"message\":\"" + e.getMessage() + "\"}";
+			return JsonWrapper.wrap("message", e.getMessage());
 		}
 	}
 	
-	@RequestMapping(value="/room/{roomId}", produces="application/json", method=RequestMethod.GET)
+	@RequestMapping(value="/room/{roomId}", method=RequestMethod.GET)
 	public String roomStatus(@PathVariable int roomId, HttpServletResponse res) {
-		return null;
+		try {
+			return rmService.getRoomStatus(roomId);
+		} catch (RoomNotFoundException e) {
+			res.setStatus(404);
+			return JsonWrapper.wrap("message", e.getMessage());
+		}
 	}
 }

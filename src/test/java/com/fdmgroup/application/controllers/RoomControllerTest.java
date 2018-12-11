@@ -18,6 +18,7 @@ import com.fdmgroup.application.exceptions.ExceededRoomCapacityException;
 import com.fdmgroup.application.exceptions.ExceededRoomsCapacityException;
 import com.fdmgroup.application.exceptions.RoomNotFoundException;
 import com.fdmgroup.application.services.IRoomManagementService;
+import com.fdmgroup.application.util.JsonWrapper;
 
 public class RoomControllerTest {
 	@Mock
@@ -42,7 +43,7 @@ public class RoomControllerTest {
 	}
 
 	@Test
-	public void room_not_found_calls_set_status_404() throws ExceededRoomsCapacityException {
+	public void vacant_room_cannot_be_found_sets_404() throws ExceededRoomsCapacityException {
 		doThrow(mock(ExceededRoomsCapacityException.class)).when(rmService).createNewRoom();
 		
 		String newRoom = controller.createRoom(res);
@@ -67,7 +68,7 @@ public class RoomControllerTest {
 		String message = controller.joinRoom(123456, "dae", res);
 		
 		verify(res).setStatus(403);
-		assertEquals("{\"message\":\"" + error + "\"}", message);
+		assertEquals(JsonWrapper.wrap("message", error), message);
 	}
 	
 	@Test
@@ -77,7 +78,7 @@ public class RoomControllerTest {
 		String message = controller.joinRoom(123456, "dae", res);
 		
 		verify(res).setStatus(403);
-		assertEquals("{\"message\":\"" + error + "\"}", message);
+		assertEquals(JsonWrapper.wrap("message", error), message);
 	}
 	
 	@Test
@@ -87,7 +88,30 @@ public class RoomControllerTest {
 		String message = controller.joinRoom(123456, "dae", res);
 		
 		verify(res).setStatus(404);
-		assertEquals("{\"message\":\"" + error + "\"}", message);
+		assertEquals(JsonWrapper.wrap("message", error), message);
+	}
+	
+	@Test
+	public void returns_capacity_of_valid_room() throws RoomNotFoundException {
+		String serviceResponse = JsonWrapper.wrap("capacity", "5/10");
+		when(rmService.getRoomStatus(1234)).thenReturn(serviceResponse);
+		
+		String capacity = controller.roomStatus(1234, res);
+		
+		assertEquals(serviceResponse, capacity);
+	}
+	
+	@Test
+	public void when_service_throws_room_not_found_exception_return_message_and_set_status_to_404() throws RoomNotFoundException {
+		String error = "Room not found. Check room number and try again.";
+		Exception e = mock(RoomNotFoundException.class);
+		doThrow(e).when(rmService).getRoomStatus(1234);
+		when(e.getMessage()).thenReturn(error);
+
+		String message = controller.roomStatus(1234, res);
+		
+		verify(res).setStatus(404);
+		assertEquals(JsonWrapper.wrap("message", error), message);
 	}
 
 	private String stubErrorMessage(Exception e, String error) throws ExceededRoomCapacityException, DuplicateNicknameException, RoomNotFoundException {

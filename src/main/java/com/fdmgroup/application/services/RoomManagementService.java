@@ -14,9 +14,11 @@ import com.fdmgroup.application.exceptions.ExceededRoomsCapacityException;
 import com.fdmgroup.application.exceptions.RoomNotFoundException;
 import com.fdmgroup.application.factories.RoomFactory;
 import com.fdmgroup.application.game.Room;
+import com.fdmgroup.application.util.JsonWrapper;
 
 @Service
 public class RoomManagementService implements IRoomManagementService {
+	private static final int MAX_PLAYER_CAPACITY = 10;
 	@Resource
 	private IRoomNumberGenerator rnGenerator;
 	@Resource
@@ -51,6 +53,14 @@ public class RoomManagementService implements IRoomManagementService {
 			throw new RoomNotFoundException();
 		Room room = rooms.get(roomId);
 		room.addPlayer(nickname);
-		return room.getNumPlayers() + "/10";
+		return JsonWrapper.wrap("capacity", room.getNumPlayers() + "/" + MAX_PLAYER_CAPACITY);
+	}
+
+	@Override
+	public String getRoomStatus(int roomId) throws RoomNotFoundException {
+		Room room = rooms.get(roomId);
+		if (room == null)
+			throw new RoomNotFoundException();
+		return JsonWrapper.wrap("capacity", room.getNumPlayers() + "/" + MAX_PLAYER_CAPACITY);
 	}
 }

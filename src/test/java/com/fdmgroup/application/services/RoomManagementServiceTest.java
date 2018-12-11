@@ -12,6 +12,7 @@ import com.fdmgroup.application.exceptions.ExceededRoomsCapacityException;
 import com.fdmgroup.application.exceptions.RoomNotFoundException;
 import com.fdmgroup.application.factories.RoomFactory;
 import com.fdmgroup.application.game.Room;
+import com.fdmgroup.application.util.JsonWrapper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -59,7 +60,7 @@ public class RoomManagementServiceTest {
 		String capacity = rmService.addToRoom(1234, "dae");
 		
 		verify(room).addPlayer("dae");
-		assertEquals("5/10", capacity);
+		assertEquals(JsonWrapper.wrap("capacity", "5/10"), capacity);
 	}
 	
 	
@@ -68,5 +69,16 @@ public class RoomManagementServiceTest {
 		rmService.setRooms(testMap);
 		
 		String capacity = rmService.addToRoom(1234, "dae");
+	}
+	
+	@Test
+	public void room_status_returns_roomsc_current_capacity() throws RoomNotFoundException, DuplicateNicknameException {
+		testMap.put(1234, room);
+		rmService.setRooms(testMap);
+		when(room.getNumPlayers()).thenReturn(2);
+		
+		String roomStatus = rmService.getRoomStatus(1234);
+		
+		assertEquals(JsonWrapper.wrap("capacity", "2/10"), roomStatus);
 	}
 }

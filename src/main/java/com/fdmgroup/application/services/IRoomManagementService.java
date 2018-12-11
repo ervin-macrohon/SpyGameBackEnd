@@ -11,4 +11,6 @@ public interface IRoomManagementService {
 
 	String addToRoom(int roomId, String nickname) throws ExceededRoomCapacityException, DuplicateNicknameException, RoomNotFoundException;
 
+	String getRoomStatus(int roomId) throws RoomNotFoundException;
+
 }

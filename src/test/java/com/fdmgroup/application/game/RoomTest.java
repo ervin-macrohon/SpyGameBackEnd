@@ -44,5 +44,27 @@ public class RoomTest {
 		room.addPlayer("dae");
 		room.addPlayer("dae");
 	}
+	
+	@Test
+	public void get_num_players_returns_number_of_entries_in_room_map() throws DuplicateNicknameException {
+		when(factory.createState()).thenReturn(state);
+		room.addPlayer("dae");
+
+		int numPlayers = room.getNumPlayers();
+		
+		assertEquals(1, numPlayers);
+	}
+	
+	@Test
+	public void get_num_players_returns_number_of_entries_in_room_map_for_more_than_one() throws DuplicateNicknameException {
+		when(factory.createState()).thenReturn(state);
+		room.addPlayer("dae");
+		room.addPlayer("dai");
+		room.addPlayer("dao");
+
+		int numPlayers = room.getNumPlayers();
+		
+		assertEquals(3, numPlayers);
+	}
 
 }
